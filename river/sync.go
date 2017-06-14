@@ -9,7 +9,7 @@ import (
 
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-    "github.com/wangxiang/mongodb"
+	"github.com/WangXiangUSTC/go-mysql-mongodb/mongodb"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
