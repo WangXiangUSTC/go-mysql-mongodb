@@ -5,7 +5,7 @@ my_user = "root"
 my_pass = ""
 my_charset = "utf8"
 
-# Elasticsearch address
+# MongoDB address
 mongo_addr = "127.0.0.1:27017"
 
 # Path to store data, like master.info, if not set or empty,
@@ -53,21 +53,21 @@ tables = ["t", "t_[0-9]{4}", "tfield", "tfilter"]
 # | name  | varchar(256) | YES  |     | NULL    |       |
 # +-------+--------------+------+-----+---------+-------+
 # 
-# The table `t` will be synced to ES index `test` and type `t`.
+# The table `t` will be synced to MongoDB database `test` and collection `t`.
 [[rule]]
 schema = "test"
 table = "t"
-index = "test"
-type = "t"
+database = "test"
+collection = "t"
 
 # Wildcard table rule, the wildcard table must be in source tables 
-# All tables which match the wildcard format will be synced to ES index `test` and type `t`.
+# All tables which match the wildcard format will be synced to MongoDB database `test` and collection `t`.
 # In this example, all tables must have same schema with above table `t`;
 [[rule]]
 schema = "test"
 table = "t_[0-9]{4}"
-index = "test"
-type = "t"
+database = "test"
+collection = "t"
 
 # Simple field rule 
 #
@@ -83,14 +83,14 @@ type = "t"
 [[rule]]
 schema = "test"
 table = "tfield"
-index = "test"
-type = "tfield"
+database = "test"
+collection = "tfield"
 
 [rule.field]
-# Map column `id` to ES field `es_id`
-id="es_id"
-# Map column `tags` to ES field `es_tags` with array type 
-tags="es_tags,list"
+# Map column `id` to ES field `mongo_id`
+id="mongo_id"
+# Map column `tags` to ES field `mongo_tags` with array type 
+tags="mongo_tags,list"
 # Map column `keywords` to ES with array type
 keywords=",list"
 
@@ -109,8 +109,8 @@ keywords=",list"
 [[rule]]
 schema = "test"
 table = "tfilter"
-index = "test"
-type = "tfilter"
+database = "test"
+collection = "tfilter"
 
 # Only sync following columns
 filter = ["id", "name"]
@@ -129,8 +129,8 @@ filter = ["id", "name"]
 [[rule]]
 schema = "test"
 table = "tid_[0-9]{4}"
-index = "test"
-type = "t"
-# The es doc's id will be `id`:`tag`
+database = "test"
+collection = "t"
+# The mongodb doc's _id will be `id`:`tag`
 # It is useful for merge muliple table into one type while theses tables have same PK 
 id = ["id", "tag"]
