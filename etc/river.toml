@@ -8,6 +8,7 @@ my_charset = "utf8"
 # MongoDB address
 mongo_addr = "127.0.0.1:27017"
 
+
 # Path to store data, like master.info, if not set or empty,
 # we must use this to support breakpoint resume syncing. 
 # TODO: support other storage, like etcd. 
@@ -36,7 +37,7 @@ flush_bulk_time = "200ms"
 [[source]]
 schema = "test"
 
-# Only below tables will be synced into Elasticsearch.
+# Only below tables will be synced into MongoDB.
 # "t_[0-9]{4}" is a wildcard table format, you can use it if you have many sub tables, like table_0000 - table_1023
 # I don't think it is necessary to sync all tables in a database.
 tables = ["t", "t_[0-9]{4}", "tfield", "tfilter"]
@@ -87,11 +88,11 @@ database = "test"
 collection = "tfield"
 
 [rule.field]
-# Map column `id` to ES field `mongo_id`
+# Map column `id` to MongoDB field `mongo_id`
 id="mongo_id"
-# Map column `tags` to ES field `mongo_tags` with array type 
+# Map column `tags` to MongoDB field `mongo_tags` with array type 
 tags="mongo_tags,list"
-# Map column `keywords` to ES with array type
+# Map column `keywords` to MongoDB with array type
 keywords=",list"
 
 # Filter rule 
