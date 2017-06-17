@@ -105,9 +105,9 @@ func (s *elasticTestSuite) TestSimple(c *C) {
 func (s *elasticTestSuite) TestParent(c *C) {
 	database := "dummy"
 	collection := "comment"
-	
+
 	items := make([]*BulkRequest, 10)
-	
+
 	for i := 0; i < 10; i++ {
 		id := fmt.Sprintf("%d", i)
 		req := new(BulkRequest)
@@ -121,10 +121,7 @@ func (s *elasticTestSuite) TestParent(c *C) {
 
 	err := s.c.Bulk(items)
 	c.Assert(err, IsNil)
-    /*
-	c.Assert(err, IsNil)
-	c.Assert(resp.Code, Equals, 200)
-	c.Assert(resp.Errors, Equals, false)
+
 	for i := 0; i < 10; i++ {
 		id := fmt.Sprintf("%d", i)
 		req := new(BulkRequest)
@@ -132,12 +129,8 @@ func (s *elasticTestSuite) TestParent(c *C) {
 		req.Type = docType
 		req.Action = ActionDelete
 		req.ID = id
-		req.Parent = "1"
 		items[i] = req
 	}
-	resp, err = s.c.Bulk(items)
+	err = s.c.Bulk(items)
 	c.Assert(err, IsNil)
-	c.Assert(resp.Code, Equals, 200)
-	c.Assert(resp.Errors, Equals, false)
-    */
 }
