@@ -78,17 +78,17 @@ database = "t"
 collection = "t"
 
     [rule.field]
-    // This will map column title to elastic search my_title
+    // This will map column title to mongodb search my_title
     title="my_title"
 
-    // This will map column title to elastic search my_title and use array type
+    // This will map column title to mongodb search my_title and use array type
     title="my_title,list"
 
-    // This will map column title to elastic search title and use array type
+    // This will map column title to mongodb search title and use array type
     title=",list"
 ```
 
-Modifier "list" will translates a mysql string field like "a,b,c" on an elastic array type '{"a", "b", "c"}' this is specially useful if you need to use those fields on filtering on mongodb.
+Modifier "list" will translates a mysql string field like "a,b,c" on an mongodb array type '{"a", "b", "c"}' this is specially useful if you need to use those fields on filtering on mongodb.
 
 ## Wildcard table
 
@@ -130,7 +130,7 @@ filter = ["id", "name"]
 
 In the above example, we will only sync MySQL table tfiler's columns `id` and `name` to MongoDB. 
 
-## Why not other rivers?
+## Why write this tool?
 At first I use [tungsten-replicator](https://github.com/vmware/tungsten-replicator) to synchronize mysql data to mongodb, but I found this tool more cumbersome, especially when initialize data at the begining, and needed to deploy at least two services(one master and one slave). Later, I use [go-mysql-elasticsearch](https://github.com/siddontang/go-mysql-elasticsearch) sync mysql data to elasticsearch, I found this tool is very simple to use, so rewrite the tool used to synchronize mysql data to mongodb.
 
 
