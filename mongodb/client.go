@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"fmt"
-	"github.com/ngaut/log"
+	//"github.com/ngaut/log"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -97,16 +97,12 @@ func (c *Client) Bulk(items []*BulkRequest) ( error) {
 		}
 		switch item.Action {
 		case ActionDelete:
-			log.Infof("%s.%s remove id: %s", database, collection, item.ID)
 			colDict[key].Remove(bson.M{"_id": item.ID})
-			c.c.DB(database).C(collection).Bulk().Remove(bson.M{"_id": item.ID})
-			c.c.DB(database).C(collection).Bulk().Run()
 		case ActionUpdate:
 			colDict[key].Upsert(bson.M{"_id": item.ID}, bson.M{"$set": item.Data})
 		case ActionInsert:
-			log.Infof("id: %s", item.ID)
 			item.Data["_id"] = item.ID
-			colDict[key].Insert(item.Data)
+			colDict[key].Upsert(bson.M{"_id": item.ID}, bson.M{"$set": item.Data})
 
 		}
 	}
