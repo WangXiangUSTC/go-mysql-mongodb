@@ -7,7 +7,8 @@ my_charset = "utf8"
 
 # MongoDB address
 mongo_addr = "127.0.0.1:27017"
-
+mongo_user = ""
+mongo_pass = ""
 
 # Path to store data, like master.info, if not set or empty,
 # we must use this to support breakpoint resume syncing. 
