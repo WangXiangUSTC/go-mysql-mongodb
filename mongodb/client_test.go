@@ -102,7 +102,7 @@ func (s *elasticTestSuite) TestSimple(c *C) {
 }
 */
 // this requires a parent setting in _mapping
-func (s *elasticTestSuite) TestParent(c *C) {
+func (s *elasticTestSuite) TestBulk(c *C) {
 	database := "dummy"
 	collection := "comment"
 
@@ -114,8 +114,8 @@ func (s *elasticTestSuite) TestParent(c *C) {
 		req.Action = ActionInsert
 		req.ID = id
 		req.Data = makeTestData(fmt.Sprintf("abc %d", i), fmt.Sprintf("hello world %d", i))
-        req.Database = database
-        req.Collection = collection
+		req.Database = database
+		req.Collection = collection
 		items[i] = req
 	}
 
@@ -125,10 +125,10 @@ func (s *elasticTestSuite) TestParent(c *C) {
 	for i := 0; i < 10; i++ {
 		id := fmt.Sprintf("%d", i)
 		req := new(BulkRequest)
-		req.Index = index
-		req.Type = docType
 		req.Action = ActionDelete
 		req.ID = id
+		req.Database = database
+		req.Collection = collection
 		items[i] = req
 	}
 	err = s.c.Bulk(items)
