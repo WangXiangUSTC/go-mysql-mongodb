@@ -64,8 +64,8 @@ func NewRiver(c *Config) (*River, error) {
 	}
     cfg := new(mongodb.ClientConfig)
     cfg.Addr = r.c.MongoAddr
-    cfg.Username = ""
-    cfg.Password = ""
+    cfg.Username = r.c.MongoUser
+    cfg.Password = r.c.MongoPassword
 	r.mongo = mongodb.NewClient(cfg)
 
 	r.st = &stat{r: r}

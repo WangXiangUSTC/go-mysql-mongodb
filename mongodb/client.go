@@ -35,12 +35,11 @@ func NewClient(conf *ClientConfig) *Client {
 }
 
 type ResponseItem struct {
-	ID      string                 `json:"_id"`
-	Index   string                 `json:"_index"`
-	Type    string                 `json:"_type"`
-	Version int                    `json:"_version"`
-	Found   bool                   `json:"found"`
-	Source  map[string]interface{} `json:"_source"`
+	ID         string                 `json:"_id"`
+	Database   string                 `json:"_index"`
+	Collection string                 `json:"_type"`
+	Found      bool                   `json:"found"`
+	Source     map[string]interface{} `json:"_source"`
 }
 
 type Response struct {
@@ -53,16 +52,16 @@ const (
 	ActionCreate = "create"
 	ActionUpdate = "update"
 	ActionDelete = "delete"
-	ActionInsert  = "insert"
+	ActionInsert = "insert"
 )
 
 type BulkRequest struct {
-	Action string
-	Database  string
-	Collection   string
-	ID     string
-	Filter map[string]interface{}
-	Data map[string]interface{}
+	Action     string
+	Database   string
+	Collection string
+	ID         string
+	Filter     map[string]interface{}
+	Data       map[string]interface{}
 }
 
 
@@ -75,13 +74,11 @@ type BulkResponse struct {
 }
 
 type BulkResponseItem struct {
-	Index   string          `json:"_index"`
-	Type    string          `json:"_type"`
-	ID      string          `json:"_id"`
-	Version int             `json:"_version"`
-	Status  int             `json:"status"`
-	//Error   json.RawMessage `json:"error"`
-	Found   bool            `json:"found"`
+	Database   string          `json:"_index"`
+	Collection string          `json:"_type"`
+	ID         string          `json:"_id"`
+	Status     int             `json:"status"`
+	Found      bool            `json:"found"`
 }
 
 func (c *Client) Bulk(items []*BulkRequest) ( error) {
@@ -93,10 +90,8 @@ func (c *Client) Bulk(items []*BulkRequest) ( error) {
 		collection = item.Collection
 		key := fmt.Sprintf("%s_%s", database, collection)
 		if _, ok := colDict[key]; ok {
-			//coll := c.c.DB(database).C(collection)
-			//colDict[key] = coll.Bulk()
+            // do nothing
 		} else {
-			//log.Infof("database:%s, collection:%s", database, collection)
 			coll := c.c.DB(database).C(collection)
 			colDict[key] = coll.Bulk()
 		}
@@ -116,7 +111,10 @@ func (c *Client) Bulk(items []*BulkRequest) ( error) {
 		}
 	}
 	for _, v := range colDict {
-		_, _ = v.Run()
+        _, err := v.Run()
+        if err != nil {
+            return err
+        }
 	}
 
 	return nil
