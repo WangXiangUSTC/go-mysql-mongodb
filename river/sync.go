@@ -418,11 +418,11 @@ func (r *River) doBulk(reqs []*mongodb.BulkRequest) error {
 	if len(reqs) == 0 {
 		return nil
 	}
-    _ = r.mongo.Bulk(reqs)
-	//if err := r.es.Bulk(reqs); err != nil {
-	//	log.Errorf("sync docs err %v after binlog %s", err, r.canal.SyncedPosition())
-	//	return errors.Trace(err)
-	//}
+
+	if err := r.mongo.Bulk(reqs); err != nil {
+		log.Errorf("sync docs err %v after binlog %s", err, r.canal.SyncedPosition())
+		return errors.Trace(err)
+	}
 
 	return nil
 }
