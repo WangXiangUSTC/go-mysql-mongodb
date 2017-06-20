@@ -31,7 +31,7 @@ func newDefaultRule(schema string, table string) *Rule {
 
 	r.Schema = schema
 	r.Table = table
-	r.Database = table
+	r.Database = schema
 	r.Collection = table
 	r.FieldMapping = make(map[string]string)
 
