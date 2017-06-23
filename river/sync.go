@@ -283,7 +283,7 @@ func (r *River) makeReqColumnData(col *schema.TableColumn, value interface{}) in
                 case []byte:
                     	err = json.Unmarshal(v, &f)
         	}
-        	if err == nil {
+        	if err == nil && f != nil {
             		return f
         	}
 	}
