@@ -62,10 +62,10 @@ func NewRiver(c *Config) (*River, error) {
 	if err = r.canal.CheckBinlogRowImage("FULL"); err != nil {
 		return nil, errors.Trace(err)
 	}
-    cfg := new(mongodb.ClientConfig)
-    cfg.Addr = r.c.MongoAddr
-    cfg.Username = r.c.MongoUser
-    cfg.Password = r.c.MongoPassword
+    	cfg := new(mongodb.ClientConfig)
+    	cfg.Addr = r.c.MongoAddr
+    	cfg.Username = r.c.MongoUser
+    	cfg.Password = r.c.MongoPassword
 	r.mongo = mongodb.NewClient(cfg)
 
 	r.st = &stat{r: r}
