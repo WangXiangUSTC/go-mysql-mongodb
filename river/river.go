@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"sync"
+    "crypto/md5"
+    "hash"
 
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
@@ -18,6 +20,8 @@ type River struct {
 	canal *canal.Canal
 
 	rules map[string]*Rule
+
+    md5Ctx hash.Hash
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -41,6 +45,8 @@ func NewRiver(c *Config) (*River, error) {
 	r.syncCh = make(chan interface{}, 4096)
 	r.ctx, r.cancel = context.WithCancel(context.Background())
 
+    r.md5Ctx = md5.New()
+
 	var err error
 	if r.master, err = loadMasterInfo(c.DataDir); err != nil {
 		return nil, errors.Trace(err)
@@ -62,10 +68,10 @@ func NewRiver(c *Config) (*River, error) {
 	if err = r.canal.CheckBinlogRowImage("FULL"); err != nil {
 		return nil, errors.Trace(err)
 	}
-    	cfg := new(mongodb.ClientConfig)
-    	cfg.Addr = r.c.MongoAddr
-    	cfg.Username = r.c.MongoUser
-    	cfg.Password = r.c.MongoPassword
+	cfg := new(mongodb.ClientConfig)
+	cfg.Addr = r.c.MongoAddr
+	cfg.Username = r.c.MongoUser
+	cfg.Password = r.c.MongoPassword
 	r.mongo = mongodb.NewClient(cfg)
 
 	r.st = &stat{r: r}

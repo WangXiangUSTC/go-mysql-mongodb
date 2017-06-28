@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 	"encoding/json"
+    "encoding/hex"
 
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
@@ -201,12 +202,14 @@ func (r *River) makeUpdateRequest(rule *Rule, rows [][]interface{}) ([]*mongodb.
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
+        log.Infof("beforeid: %s", beforeID)
 
 		afterID, err := r.getDocID(rule, rows[i+1])
 
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
+        log.Infof("afterid: %s", afterID)
 
 		req := &mongodb.BulkRequest{Database: rule.Database, Collection: rule.Collection, ID: beforeID}
 
@@ -275,17 +278,17 @@ func (r *River) makeReqColumnData(col *schema.TableColumn, value interface{}) in
 			return string(value[:])
 		}
 	case schema.TYPE_JSON:
-        	var f interface{}
-        	var err error
-        	switch v := value.(type) {
-                case string:
-                    	err = json.Unmarshal([]byte(v), &f)
-                case []byte:
-                    	err = json.Unmarshal(v, &f)
-        	}
-        	if err == nil && f != nil {
-            		return f
-        	}
+			var f interface{}
+			var err error
+			switch v := value.(type) {
+				case string:
+					err = json.Unmarshal([]byte(v), &f)
+				case []byte:
+					err = json.Unmarshal(v, &f)
+			}
+			if err == nil && f != nil {
+					return f
+			}
 	}
 
 	return value
@@ -384,39 +387,52 @@ func (r *River) makeUpdateReqData(req *mongodb.BulkRequest, rule *Rule,
 // Else get the ID's column in one row and format them into a string
 func (r *River) getDocID(rule *Rule, row []interface{}) (string, error) {
 	var (
+        flag bool
         ids []interface{}
-        err error 
 	)
 	if rule.ID == nil {
-		ids, err = canal.GetPKValues(rule.TableInfo, row)
-		if err != nil {
-			return "", err
-		}
+        ids = make([]interface{}, 0, len(rule.TableInfo.PKColumns))
+
+        if len(rule.TableInfo.PKColumns) == 0 {
+            flag = true
+        }
+        for _, num := range rule.TableInfo.PKColumns {
+            ids = append(ids, r.makeReqColumnData(&(rule.TableInfo.Columns[num]), row[num]))
+        }
 	} else {
 		ids = make([]interface{}, 0, len(rule.ID))
 		for _, column := range rule.ID {
-			value, err := canal.GetColumnValue(rule.TableInfo, column, row)
-			if err != nil {
-				return "", err
-			}
-			ids = append(ids, value)
+            index := rule.TableInfo.FindColumn(column)
+            ids = append(ids, r.makeReqColumnData(&(rule.TableInfo.Columns[index]), row[index]))
 		}
 	}
+    if flag {
+        ids = make([]interface{}, 0, len(rule.TableInfo.Columns))
+        for i, column := range rule.TableInfo.Columns {
+            ids = append(ids, r.makeReqColumnData(&column, row[i]))
+        }
+    }
 
 	var buf bytes.Buffer
 
 	sep := ""
 	for i, value := range ids {
 		if value == nil {
+            log.Infof("row: %s", row)
 			return "", errors.Errorf("The %ds id or PK value is nil", i)
 		}
 
 		buf.WriteString(fmt.Sprintf("%s%v", sep, value))
 		sep = ":"
 	}
-
+    if flag {
+		r.md5Ctx.Write(buf.Bytes())
+		cipherStr := r.md5Ctx.Sum(nil)
+        return hex.EncodeToString(cipherStr), nil
+	}
 	return buf.String(), nil
 }
+
 
 func (r *River) getParentID(rule *Rule, row []interface{}, columnName string) (string, error) {
 	index := rule.TableInfo.FindColumn(columnName)
