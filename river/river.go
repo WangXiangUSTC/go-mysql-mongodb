@@ -73,7 +73,6 @@ func NewRiver(c *Config) (*River, error) {
 	cfg.Username = r.c.MongoUser
 	cfg.Password = r.c.MongoPassword
 	r.mongo = mongodb.NewClient(cfg)
-
 	r.st = &stat{r: r}
 	go r.st.Run(r.c.StatAddr)
 
@@ -98,27 +97,44 @@ func (r *River) newCanal() error {
 }
 
 func (r *River) prepareCanal() error {
-	var db string
-	dbs := map[string]struct{}{}
-	tables := make([]string, 0, len(r.rules))
-	for _, rule := range r.rules {
-		db = rule.Schema
-		dbs[rule.Schema] = struct{}{}
-		tables = append(tables, rule.Table)
-	}
+    if r.c.AllDB == "yes" {
+        sql := "select SCHEMA_NAME from information_schema.SCHEMATA"
+        res, err := r.canal.Execute(sql)
+        if err != nil {
+            return errors.Trace(err)
+        }
 
-	if len(dbs) == 1 {
-		// one db, we can shrink using table
-		r.canal.AddDumpTables(db, tables...)
-	} else {
-		// many dbs, can only assign databases to dump
-		keys := make([]string, 0, len(dbs))
-		for key, _ := range dbs {
-			keys = append(keys, key)
-		}
+        for i := 0; i < res.Resultset.RowNumber(); i++ {
+            db, _ := res.GetString(i, 0)
+            if db == "information_schema" || db == "performance_schema" || db == "sys" || db == "mysql" {
+                continue
+            } else {
+                r.canal.AddDumpDatabases(db)
+            }
+        }
+    } else {
+	    var db string
+	    dbs := map[string]struct{}{}
+	    tables := make([]string, 0, len(r.rules))
+	    for _, rule := range r.rules {
+            //db = rule.Schema
+		    dbs[rule.Schema] = struct{}{}
+		    tables = append(tables, rule.Table)
+	    }
 
-		r.canal.AddDumpDatabases(keys...)
-	}
+        if len(dbs) == 1 {
+		    // one db, we can shrink using table
+		    r.canal.AddDumpTables(db, tables...)
+	    } else {
+		    // many dbs, can only assign databases to dump
+		    keys := make([]string, 0, len(dbs))
+		    for key, _ := range dbs {
+			    keys = append(keys, key)
+		    }
+
+		    r.canal.AddDumpDatabases(keys...)
+	    }
+    }
 
 	r.canal.SetEventHandler(&eventHandler{r})
 
@@ -181,7 +197,7 @@ func (r *River) parseSource() (map[string][]string, error) {
 		}
 	}
 
-	if len(r.rules) == 0 {
+	if len(r.rules) == 0 && r.c.AllDB != "yes" {
 		return nil, errors.Errorf("no source data defined")
 	}
 
@@ -204,7 +220,7 @@ func (r *River) prepareRule() error {
 			if regexp.QuoteMeta(rule.Table) != rule.Table {
 				//wildcard table
 				tables, ok := wildtables[ruleKey(rule.Schema, rule.Table)]
-				if !ok {
+				if !ok && r.c.AllDB != "yes" {
 					return errors.Errorf("wildcard table for %s.%s is not defined in source", rule.Schema, rule.Table)
 				}
 
