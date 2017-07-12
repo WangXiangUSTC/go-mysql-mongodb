@@ -21,8 +21,8 @@ type Config struct {
 	AllDB      string `toml:"my_alldb"`
 
 	MongoAddr     string `toml:"mongo_addr"`
-    MongoUser     string `toml:"mongo_user"`
-    MongoPassword string `toml:"mongo_pass"`
+	MongoUser     string `toml:"mongo_user"`
+	MongoPassword string `toml:"mongo_pass"`
 
 	StatAddr string `toml:"stat_addr"`
 
