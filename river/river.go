@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"sync"
-    "crypto/md5"
-    "hash"
+	"crypto/md5"
+	"hash"
 
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
