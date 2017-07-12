@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 	"encoding/json"
-    "encoding/hex"
+	"encoding/hex"
 
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
