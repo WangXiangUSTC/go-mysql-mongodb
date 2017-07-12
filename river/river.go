@@ -98,6 +98,7 @@ func (r *River) newCanal() error {
 
 func (r *River) prepareCanal() error {
     if r.c.AllDB == "yes" {
+        log.Infof("dump all database")
         sql := "select SCHEMA_NAME from information_schema.SCHEMATA"
         res, err := r.canal.Execute(sql)
         if err != nil {
@@ -117,12 +118,13 @@ func (r *River) prepareCanal() error {
 	    dbs := map[string]struct{}{}
 	    tables := make([]string, 0, len(r.rules))
 	    for _, rule := range r.rules {
-            //db = rule.Schema
+            db = rule.Schema
 		    dbs[rule.Schema] = struct{}{}
 		    tables = append(tables, rule.Table)
 	    }
 
         if len(dbs) == 1 {
+            log.Infof("dump database: %s, tables: %s", db, tables)
 		    // one db, we can shrink using table
 		    r.canal.AddDumpTables(db, tables...)
 	    } else {
@@ -131,7 +133,7 @@ func (r *River) prepareCanal() error {
 		    for key, _ := range dbs {
 			    keys = append(keys, key)
 		    }
-
+            log.Infof("dump database: %s", keys)
 		    r.canal.AddDumpDatabases(keys...)
 	    }
     }
