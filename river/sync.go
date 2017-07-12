@@ -59,7 +59,6 @@ func (h *eventHandler) OnXID(nextPos mysql.Position) error {
 }
 
 func (h *eventHandler) OnRow(e *canal.RowsEvent) error {
-    log.Infof("row: %s", e.Rows)
     var err error
 	rule, ok := h.r.rules[ruleKey(e.Table.Schema, e.Table.Name)]
 	if !ok {
@@ -89,6 +88,7 @@ func (h *eventHandler) OnRow(e *canal.RowsEvent) error {
 
 	if err != nil {
 		h.r.cancel()
+        log.Warnf("make %s MongoDB request err %v, close sync", e.Action, err)
 		return errors.Errorf("make %s MongoDB request err %v, close sync", e.Action, err)
 	}
 
@@ -212,14 +212,12 @@ func (r *River) makeUpdateRequest(rule *Rule, rows [][]interface{}) ([]*mongodb.
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-        //log.Infof("beforeid: %s", beforeID)
 
 		afterID, err := r.getDocID(rule, rows[i+1])
 
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-        //log.Infof("afterid: %s", afterID)
 
 		req := &mongodb.BulkRequest{Database: rule.Database, Collection: rule.Collection, ID: beforeID}
 
@@ -396,7 +394,6 @@ func (r *River) makeUpdateReqData(req *mongodb.BulkRequest, rule *Rule,
 // If id in toml file is none, get primary keys in one row and format them into a string, and PK must not be nil
 // Else get the ID's column in one row and format them into a string
 func (r *River) getDocID(rule *Rule, row []interface{}) (string, error) {
-    log.Infof("getdocid row: %s", row)
 	var (
         flag bool
         ids []interface{}
@@ -429,8 +426,10 @@ func (r *River) getDocID(rule *Rule, row []interface{}) (string, error) {
 	sep := ""
 	for i, value := range ids {
 		if value == nil {
-            //log.Infof("row: %s", row)
-			return "", errors.Errorf("The %ds id or PK value is nil", i)
+            value = "<nil>" 
+            if !flag {
+                log.Warnf("Position: %d id or PK value is nil, row: %s", i, row)
+            }
 		}
 
 		buf.WriteString(fmt.Sprintf("%s%v", sep, value))
@@ -438,10 +437,8 @@ func (r *River) getDocID(rule *Rule, row []interface{}) (string, error) {
 	}
 
     if flag {
-        //log.Infof("before md5: (%s)", buf.String())
 		r.md5Ctx.Write(buf.Bytes())
 		cipherStr := r.md5Ctx.Sum(nil)
-        //log.Infof("after md5: (%s)", hex.EncodeToString(cipherStr))
         r.md5Ctx.Reset()
         return hex.EncodeToString(cipherStr), nil
 	}

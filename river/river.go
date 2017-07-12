@@ -220,7 +220,7 @@ func (r *River) prepareRule() error {
 			if regexp.QuoteMeta(rule.Table) != rule.Table {
 				//wildcard table
 				tables, ok := wildtables[ruleKey(rule.Schema, rule.Table)]
-				if !ok && r.c.AllDB != "yes" {
+				if !ok {
 					return errors.Errorf("wildcard table for %s.%s is not defined in source", rule.Schema, rule.Table)
 				}
 
