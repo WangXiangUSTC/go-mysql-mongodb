@@ -425,10 +425,12 @@ func (r *River) getDocID(rule *Rule, row []interface{}) (string, error) {
 		buf.WriteString(fmt.Sprintf("%s%v", sep, value))
 		sep = ":"
 	}
-    if flag {
+	if flag {
 		r.md5Ctx.Write(buf.Bytes())
 		cipherStr := r.md5Ctx.Sum(nil)
-        return hex.EncodeToString(cipherStr), nil
+		r.md5Ctx.Reset()
+
+		return hex.EncodeToString(cipherStr), nil
 	}
 	return buf.String(), nil
 }
