@@ -21,7 +21,7 @@ type River struct {
 
 	rules map[string]*Rule
 
-    md5Ctx hash.Hash
+    	md5Ctx hash.Hash
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -45,7 +45,7 @@ func NewRiver(c *Config) (*River, error) {
 	r.syncCh = make(chan interface{}, 4096)
 	r.ctx, r.cancel = context.WithCancel(context.Background())
 
-    r.md5Ctx = md5.New()
+    	r.md5Ctx = md5.New()
 
 	var err error
 	if r.master, err = loadMasterInfo(c.DataDir); err != nil {
