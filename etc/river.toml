@@ -5,6 +5,9 @@ my_user = "root"
 my_pass = ""
 my_charset = "utf8"
 
+# If you want sync all database data, you need set my_alldb="yes"
+my_alldb = "no"
+
 # MongoDB address
 mongo_addr = "127.0.0.1:27017"
 mongo_user = ""

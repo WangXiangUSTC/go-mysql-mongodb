@@ -18,10 +18,11 @@ type Config struct {
 	MyUser     string `toml:"my_user"`
 	MyPassword string `toml:"my_pass"`
 	MyCharset  string `toml:"my_charset"`
+	AllDB      string `toml:"my_alldb"`
 
 	MongoAddr     string `toml:"mongo_addr"`
-    MongoUser     string `toml:"mongo_user"`
-    MongoPassword string `toml:"mongo_pass"`
+	MongoUser     string `toml:"mongo_user"`
+	MongoPassword string `toml:"mongo_pass"`
 
 	StatAddr string `toml:"stat_addr"`
 

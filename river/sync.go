@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 	"encoding/json"
-    "encoding/hex"
+	"encoding/hex"
 
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
@@ -59,13 +59,22 @@ func (h *eventHandler) OnXID(nextPos mysql.Position) error {
 }
 
 func (h *eventHandler) OnRow(e *canal.RowsEvent) error {
+    var err error
 	rule, ok := h.r.rules[ruleKey(e.Table.Schema, e.Table.Name)]
 	if !ok {
-		return nil
+        	if h.r.c.AllDB == "yes" {
+            		rule = newDefaultRule(e.Table.Schema, e.Table.Name)
+            		rule.TableInfo, err = h.r.canal.GetTable(e.Table.Schema, e.Table.Name)
+            		if err != nil {
+            		    	return nil
+            		}
+            		h.r.rules[ruleKey(e.Table.Schema, e.Table.Name)] = rule
+        	} else {
+            		return nil
+        	}
 	}
 
 	var reqs []*mongodb.BulkRequest
-	var err error
 	switch e.Action {
 	case canal.InsertAction:
 		reqs, err = h.r.makeInsertRequest(rule, e.Rows)
@@ -79,7 +88,8 @@ func (h *eventHandler) OnRow(e *canal.RowsEvent) error {
 
 	if err != nil {
 		h.r.cancel()
-		return errors.Errorf("make %s ES request err %v, close sync", e.Action, err)
+        log.Warnf("make %s MongoDB request err %v, close sync", e.Action, err)
+		return errors.Errorf("make %s MongoDB request err %v, close sync", e.Action, err)
 	}
 
 	h.r.syncCh <- reqs
@@ -88,7 +98,7 @@ func (h *eventHandler) OnRow(e *canal.RowsEvent) error {
 }
 
 func (h *eventHandler) String() string {
-	return "ESRiverEventHandler"
+	return "MongoRiverEventHandler"
 }
 
 func (r *River) syncLoop() {
@@ -202,14 +212,12 @@ func (r *River) makeUpdateRequest(rule *Rule, rows [][]interface{}) ([]*mongodb.
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-        log.Infof("beforeid: %s", beforeID)
 
 		afterID, err := r.getDocID(rule, rows[i+1])
 
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-        log.Infof("afterid: %s", afterID)
 
 		req := &mongodb.BulkRequest{Database: rule.Database, Collection: rule.Collection, ID: beforeID}
 
@@ -387,63 +395,56 @@ func (r *River) makeUpdateReqData(req *mongodb.BulkRequest, rule *Rule,
 // Else get the ID's column in one row and format them into a string
 func (r *River) getDocID(rule *Rule, row []interface{}) (string, error) {
 	var (
-        flag bool
-        ids []interface{}
+		flag bool
+        	ids []interface{}
 	)
 	if rule.ID == nil {
-        ids = make([]interface{}, 0, len(rule.TableInfo.PKColumns))
+        	ids = make([]interface{}, 0, len(rule.TableInfo.PKColumns))
 
         if len(rule.TableInfo.PKColumns) == 0 {
-            flag = true
+            	flag = true
         }
         for _, num := range rule.TableInfo.PKColumns {
-            ids = append(ids, r.makeReqColumnData(&(rule.TableInfo.Columns[num]), row[num]))
+            	ids = append(ids, r.makeReqColumnData(&(rule.TableInfo.Columns[num]), row[num]))
         }
 	} else {
 		ids = make([]interface{}, 0, len(rule.ID))
 		for _, column := range rule.ID {
-            index := rule.TableInfo.FindColumn(column)
-            ids = append(ids, r.makeReqColumnData(&(rule.TableInfo.Columns[index]), row[index]))
+            		index := rule.TableInfo.FindColumn(column)
+            		ids = append(ids, r.makeReqColumnData(&(rule.TableInfo.Columns[index]), row[index]))
 		}
 	}
-    if flag {
-        ids = make([]interface{}, 0, len(rule.TableInfo.Columns))
-        for i, column := range rule.TableInfo.Columns {
-            ids = append(ids, r.makeReqColumnData(&column, row[i]))
-        }
-    }
+    	if flag {
+        	ids = make([]interface{}, 0, len(rule.TableInfo.Columns))
+        	for i, column := range rule.TableInfo.Columns {
+            		ids = append(ids, r.makeReqColumnData(&column, row[i]))
+        	}
+    	}
 
 	var buf bytes.Buffer
 
 	sep := ""
 	for i, value := range ids {
 		if value == nil {
-            log.Infof("row: %s", row)
-			return "", errors.Errorf("The %ds id or PK value is nil", i)
+            		value = "<nil>" 
+            		if !flag {
+                		log.Warnf("Position: %d id or PK value is nil, row: %s", i, row)
+            		}
 		}
 
 		buf.WriteString(fmt.Sprintf("%s%v", sep, value))
 		sep = ":"
 	}
-	if flag {
+
+    	if flag {
 		r.md5Ctx.Write(buf.Bytes())
 		cipherStr := r.md5Ctx.Sum(nil)
-		r.md5Ctx.Reset()
-
-		return hex.EncodeToString(cipherStr), nil
+        	r.md5Ctx.Reset()
+        	return hex.EncodeToString(cipherStr), nil
 	}
 	return buf.String(), nil
 }
 
-
-func (r *River) getParentID(rule *Rule, row []interface{}, columnName string) (string, error) {
-	index := rule.TableInfo.FindColumn(columnName)
-	if index < 0 {
-		return "", errors.Errorf("parent id not found %s(%s)", rule.TableInfo.Name, columnName)
-	}
-
-	return fmt.Sprint(row[index]), nil
-}
 
 func (r *River) doBulk(reqs []*mongodb.BulkRequest) error {
 	if len(reqs) == 0 {
