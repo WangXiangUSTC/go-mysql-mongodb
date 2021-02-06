@@ -1,0 +1,47 @@
+# MySQL address, user and password
+# user must have replication privilege in MySQL.
+my_addr = "127.0.0.1:3306"
+my_user = "test"
+my_pass = "secret"
+my_charset = "utf8"
+
+# If you want sync all database data, you need set my_alldb="yes"
+my_alldb = "no"
+
+# MongoDB address
+mongo_addr = "127.0.0.1:27017"
+mongo_user = ""
+mongo_pass = ""
+
+# Path to store data, like master.info, if not set or empty,
+# we must use this to support breakpoint resume syncing. 
+# TODO: support other storage, like etcd. 
+data_dir = "./var"
+
+# Inner Http status address
+stat_addr = "127.0.0.1:12800"
+
+# pseudo server id like a slave 
+server_id = 1001
+
+# mysql or mariadb
+flavor = "mysql"
+
+# mysqldump execution path
+# if not set or empty, ignore mysqldump.
+mysqldump = "mysqldump"
+
+# minimal items to be inserted in one bulk
+bulk_size = 128
+
+# force flush the pending requests if we don't have enough items >= bulk_size
+flush_bulk_time = "200ms"
+
+# MySQL data source
+[[source]]
+schema = "go_mysql_mongodb_test"
+
+# Only below tables will be synced into MongoDB.
+# "t_[0-9]{4}" is a wildcard table format, you can use it if you have many sub tables, like table_0000 - table_1023
+# I don't think it is necessary to sync all tables in a database.
+tables = ["t_[0-9]{4}"]
