@@ -7,7 +7,7 @@ pwd
 ls -l ./bin/go-mysql-mongodb
 
 function EXEC_SQL() {
-    mysql -uroot -h 127.0.0.1 -p123456 -P3306 -e "$1"
+    mysql -uroot -h 127.0.0.1 -P3306 -e "$1"
 }
 
 echo "Prepare data in MySQL"
