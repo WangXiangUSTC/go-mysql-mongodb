@@ -20,18 +20,18 @@ jobs:
 
     - name: Setup MySQL
       uses: shogo82148/actions-setup-mysql@v1
-        with:
-          mysql-version: v5.7.0
-          user: root
-          password: 123456
-          my-cnf: |
-            binlog_format=row
-            log-bin=mysql-bin
-            server-id=1
+      with:
+        mysql-version: v5.7.0
+        user: root
+        password: 123456
+        my-cnf: |
+          binlog_format=row
+          log-bin=mysql-bin
+          server-id=1
 
     - name: setup database
       run: |
-          mysql --user 'root' --host '127.0.0.1' -e 'create database gotest;'
+        mysql --user 'root' --host '127.0.0.1' -e 'create database gotest;'
 
     - name: Test
       run: go test --race ./...
