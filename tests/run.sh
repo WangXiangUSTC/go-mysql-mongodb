@@ -22,9 +22,9 @@ EXEC_SQL "insert into go_mysql_mongodb_test.t_0001 values(3, 'c');"
 echo "Check data in MongoDB"
 cat test.log
 mongo go_mysql_mongodb_test --quiet --eval 'db.t_0001.find().toArray()' > find.result
-./tests/check_contains  '"_id" : 1' find.result
-./tests/check_contains  '"_id" : 2' find.result
-./tests/check_contains  '"_id" : 3' find.result
+./tests/check_contains  '"_id" : "1"' find.result
+./tests/check_contains  '"_id" : "2"' find.result
+./tests/check_contains  '"_id" : "3"' find.result
 ./tests/check_contains  '"name" : "a"' find.result
 ./tests/check_contains  '"name" : "b"' find.result
 ./tests/check_contains  '"name" : "c"' find.result
