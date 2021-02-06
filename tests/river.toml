@@ -1,8 +1,8 @@
 # MySQL address, user and password
 # user must have replication privilege in MySQL.
 my_addr = "127.0.0.1:3306"
-my_user = "root"
-my_pass = ""
+my_user = "test"
+my_pass = "secret"
 my_charset = "utf8"
 
 # If you want sync all database data, you need set my_alldb="yes"
