@@ -21,8 +21,8 @@ jobs:
     - name: Setup MySQL
       uses: shogo82148/actions-setup-mysql@v1
       with:
-        user: root
-        password: 123456
+        user: test
+        password: secret
         my-cnf: |
           binlog_format=row
           log-bin=mysql-bin
