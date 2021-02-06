@@ -1,3 +1,5 @@
+# go-mysql-mongodb ![test](https://github.com/WangXiangUSTC/go-mysql-mongodb/workflows/test/badge.svg)
+
 go-mysql-mongodb is a service syncing your MySQL data into MongoDB automatically.
 
 It uses `mysqldump` to fetch the origin data at first, then syncs data incrementally with binlog.
