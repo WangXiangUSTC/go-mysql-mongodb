@@ -21,7 +21,6 @@ jobs:
     - name: Setup MySQL
       uses: shogo82148/actions-setup-mysql@v1
       with:
-        mysql-version: v5.7.0
         user: root
         password: 123456
         my-cnf: |
