@@ -1,12 +1,15 @@
 all: build
 
-build: build-elasticsearch
+build: build-go-mysql-mongodb
 
-build-elasticsearch:
+build-go-mysql-mongodb:
 	go build -o bin/go-mysql-mongodb ./cmd/go-mysql-mongodb
 
-test:
+unit-test:
 	go test -timeout 1m --race ./...
+
+integration-test:
+	./tests/run.sh
 
 clean:
 	go clean -i ./...
