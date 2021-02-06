@@ -22,6 +22,24 @@ EXEC_SQL "insert into go_mysql_mongodb_test.t_0001 values(3, 'c');"
 echo "Check data in MongoDB"
 cat test.log
 mongo go_mysql_mongodb_test --quiet --eval 'db.t_0001.find().toArray()' > find.result
+# output:
+#[
+#	{
+#		"_id" : "1",
+#		"id" : NumberLong(1),
+#		"name" : "a"
+#	},
+#	{
+#		"_id" : "2",
+#		"id" : NumberLong(2),
+#		"name" : "b"
+#	},
+#	{
+#		"_id" : "3",
+#		"id" : NumberLong(3),
+#		"name" : "c"
+#	}
+#]
 ./tests/check_contains  '"_id" : "1"' find.result
 ./tests/check_contains  '"_id" : "2"' find.result
 ./tests/check_contains  '"_id" : "3"' find.result
