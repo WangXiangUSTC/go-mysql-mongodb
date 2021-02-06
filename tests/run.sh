@@ -24,6 +24,7 @@ EXEC_SQL "insert into go_mysql_mongodb_test.t_0001 values(2, 'b');"
 EXEC_SQL "insert into go_mysql_mongodb_test.t_0001 values(3, 'c');"
 
 echo "Check data in MongoDB"
+cat test.log
 mongo go_mysql_mongodb_test --quiet --eval 'db.t_0001.find().toArray()' > find.result
 ./tests/check_contains  '"id" : 1' find.result
 ./tests/check_contains  '"id" : 2' find.result
