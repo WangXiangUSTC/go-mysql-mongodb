@@ -10,8 +10,6 @@ function EXEC_SQL() {
     mysql -utest -h 127.0.0.1 -psecret -P3306 -e "$1"
 }
 
-mysql -uroot -h 127.0.0.1 -P3306 -e "GRANT ALL PRIVILEGES ON *.* TO 'test'@'%' WITH GRANT OPTION;"
-
 echo "Prepare data in MySQL"
 EXEC_SQL "drop database if exists go_mysql_mongodb_test"
 EXEC_SQL "create database go_mysql_mongodb_test";
