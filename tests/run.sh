@@ -2,10 +2,6 @@
 
 set -eu
 
-pwd
-
-ls -l ./bin/go-mysql-mongodb
-
 function EXEC_SQL() {
     mysql -utest -h 127.0.0.1 -psecret -P3306 -e "$1"
 }
@@ -26,9 +22,9 @@ EXEC_SQL "insert into go_mysql_mongodb_test.t_0001 values(3, 'c');"
 echo "Check data in MongoDB"
 cat test.log
 mongo go_mysql_mongodb_test --quiet --eval 'db.t_0001.find().toArray()' > find.result
-./tests/check_contains  '"id" : 1' find.result
-./tests/check_contains  '"id" : 2' find.result
-./tests/check_contains  '"id" : 3' find.result
+./tests/check_contains  '"_id" : 1' find.result
+./tests/check_contains  '"_id" : 2' find.result
+./tests/check_contains  '"_id" : 3' find.result
 ./tests/check_contains  '"name" : "a"' find.result
 ./tests/check_contains  '"name" : "b"' find.result
 ./tests/check_contains  '"name" : "c"' find.result
