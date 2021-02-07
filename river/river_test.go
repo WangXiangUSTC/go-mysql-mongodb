@@ -28,7 +28,7 @@ var _ = Suite(&riverTestSuite{})
 
 func (s *riverTestSuite) SetUpSuite(c *C) {
 	var err error
-	s.c, err = client.Connect(*my_addr, "root", "123456", "test")
+	s.c, err = client.Connect(*my_addr, "root", "", "test")
 	c.Assert(err, IsNil)
 
 	s.testExecute(c, "SET SESSION binlog_format = 'ROW'")
@@ -58,7 +58,7 @@ func (s *riverTestSuite) SetUpSuite(c *C) {
 	cfg := new(Config)
 	cfg.MyAddr = *my_addr
 	cfg.MyUser = "root"
-	cfg.MyPassword = "123456"
+	cfg.MyPassword = ""
 	cfg.MyCharset = "utf8"
 	cfg.MongoAddr = *mongo_addr
 
@@ -120,7 +120,7 @@ func (s *riverTestSuite) TestConfig(c *C) {
 	str := `	
 my_addr = "127.0.0.1:3306"	
 my_user = "root"	
-my_pass = "123456"	
+my_pass = ""	
 my_charset = "utf8"	
 mongo_addr = "127.0.0.1:27017"	
 data_dir = "./var"	
