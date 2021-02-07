@@ -129,7 +129,28 @@ func (c *Client) DeleteDB(database string) error {
 	return db.DropDatabase()
 }
 
-func (c *Client) Get(database, collection, id string) (*Response, error) {
+// Update creates or updates the data
+func (c *Client) Update(database string, collection string, id string, data map[string]interface{}) error {
+	_, err := c.c.DB(database).C(collection).Upsert(bson.M{"_id": id}, bson.M{"$set": data})
+	return err
+}
+
+// Exists checks whether id exists or not.
+func (c *Client) Exists(database string, collection string, id string) (bool, error) {
+	resp, err := c.Get(database, collection, id)
+	if err != nil {
+		return false, err
+	}
+
+	return resp.Found, nil
+}
+
+// Delete deletes the item by id.
+func (c *Client) Delete(database string, collection string, id string) error {
+	return c.c.DB(database).C(collection).Remove(bson.M{"_id": id})
+}
+
+func (c *Client) Get(database string, collection string, id string) (*Response, error) {
 	resp := new(Response)
 	resp.ID = id
 	resp.Database = database
@@ -145,6 +166,7 @@ func (c *Client) Get(database, collection, id string) (*Response, error) {
 		return resp, nil
 	}
 
+	resp.Code = 200
 	resp.Found = true
 	resp.Source = result[0]
 	return resp, err
