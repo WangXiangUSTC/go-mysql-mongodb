@@ -1,15 +1,15 @@
 package river
 
 import (
+	"crypto/md5"
 	"fmt"
+	"hash"
 	"regexp"
 	"sync"
-	"crypto/md5"
-	"hash"
 
+	"github.com/WangXiangUSTC/go-mysql-mongodb/mongodb"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/WangXiangUSTC/go-mysql-mongodb/mongodb"
 	"github.com/siddontang/go-mysql/canal"
 	"golang.org/x/net/context"
 )
@@ -21,7 +21,7 @@ type River struct {
 
 	rules map[string]*Rule
 
-    	md5Ctx hash.Hash
+	md5Ctx hash.Hash
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -45,7 +45,7 @@ func NewRiver(c *Config) (*River, error) {
 	r.syncCh = make(chan interface{}, 4096)
 	r.ctx, r.cancel = context.WithCancel(context.Background())
 
-    	r.md5Ctx = md5.New()
+	r.md5Ctx = md5.New()
 
 	var err error
 	if r.master, err = loadMasterInfo(c.DataDir); err != nil {
@@ -72,7 +72,10 @@ func NewRiver(c *Config) (*River, error) {
 	cfg.Addr = r.c.MongoAddr
 	cfg.Username = r.c.MongoUser
 	cfg.Password = r.c.MongoPassword
-	r.mongo = mongodb.NewClient(cfg)
+	r.mongo, err = mongodb.NewClient(cfg)
+	if err != nil {
+		return nil, errors.Trace(err)
+	}
 	r.st = &stat{r: r}
 	go r.st.Run(r.c.StatAddr)
 
@@ -97,46 +100,46 @@ func (r *River) newCanal() error {
 }
 
 func (r *River) prepareCanal() error {
-    if r.c.AllDB == "yes" {
-        log.Infof("dump all database")
-        sql := "select SCHEMA_NAME from information_schema.SCHEMATA"
-        res, err := r.canal.Execute(sql)
-        if err != nil {
-            return errors.Trace(err)
-        }
+	if r.c.AllDB == "yes" {
+		log.Infof("dump all database")
+		sql := "select SCHEMA_NAME from information_schema.SCHEMATA"
+		res, err := r.canal.Execute(sql)
+		if err != nil {
+			return errors.Trace(err)
+		}
 
-        for i := 0; i < res.Resultset.RowNumber(); i++ {
-            db, _ := res.GetString(i, 0)
-            if db == "information_schema" || db == "performance_schema" || db == "sys" || db == "mysql" {
-                continue
-            } else {
-                r.canal.AddDumpDatabases(db)
-            }
-        }
-    } else {
-	    var db string
-	    dbs := map[string]struct{}{}
-	    tables := make([]string, 0, len(r.rules))
-	    for _, rule := range r.rules {
-            db = rule.Schema
-		    dbs[rule.Schema] = struct{}{}
-		    tables = append(tables, rule.Table)
-	    }
+		for i := 0; i < res.Resultset.RowNumber(); i++ {
+			db, _ := res.GetString(i, 0)
+			if db == "information_schema" || db == "performance_schema" || db == "sys" || db == "mysql" {
+				continue
+			} else {
+				r.canal.AddDumpDatabases(db)
+			}
+		}
+	} else {
+		var db string
+		dbs := map[string]struct{}{}
+		tables := make([]string, 0, len(r.rules))
+		for _, rule := range r.rules {
+			db = rule.Schema
+			dbs[rule.Schema] = struct{}{}
+			tables = append(tables, rule.Table)
+		}
 
-        if len(dbs) == 1 {
-            log.Infof("dump database: %s, tables: %s", db, tables)
-		    // one db, we can shrink using table
-		    r.canal.AddDumpTables(db, tables...)
-	    } else {
-		    // many dbs, can only assign databases to dump
-		    keys := make([]string, 0, len(dbs))
-		    for key, _ := range dbs {
-			    keys = append(keys, key)
-		    }
-            log.Infof("dump database: %s", keys)
-		    r.canal.AddDumpDatabases(keys...)
-	    }
-    }
+		if len(dbs) == 1 {
+			log.Infof("dump database: %s, tables: %s", db, tables)
+			// one db, we can shrink using table
+			r.canal.AddDumpTables(db, tables...)
+		} else {
+			// many dbs, can only assign databases to dump
+			keys := make([]string, 0, len(dbs))
+			for key, _ := range dbs {
+				keys = append(keys, key)
+			}
+			log.Infof("dump database: %s", keys)
+			r.canal.AddDumpDatabases(keys...)
+		}
+	}
 
 	r.canal.SetEventHandler(&eventHandler{r})
 

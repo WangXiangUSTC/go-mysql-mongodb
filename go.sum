@@ -12,6 +12,7 @@ github.com/siddontang/go-mysql v0.0.0-20170505012730-ead11cac47bd h1:xjMfGXbn1q6
 github.com/siddontang/go-mysql v0.0.0-20170505012730-ead11cac47bd/go.mod h1:wzjXB9ICbSvAycqKa006qypXiHt48N2SJMblRU9sCrg=
 golang.org/x/net v0.0.0-20160225202940-6acef71eb696 h1:XXn4MjfKsmXEmSCU3NJj7FBWWP2FkupJxbaqHYnCd+A=
 golang.org/x/net v0.0.0-20160225202940-6acef71eb696/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+gopkg.in/check.v1 v1.0.0-20150729080431-11d3bc7aa68e h1:JtWdhHNtgJXfJZ0eKEDfUyTNb4xyfleMvenLsMSXaDo=
 gopkg.in/check.v1 v1.0.0-20150729080431-11d3bc7aa68e/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 h1:VpOs+IwYnYBaFnrNAeB8UUWtL3vEUnzSCL1nVjPhqrw=
 gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22/go.mod h1:yeKp02qBN3iKW1OzL3MGk2IdtZzaj7SFntXj72NppTA=

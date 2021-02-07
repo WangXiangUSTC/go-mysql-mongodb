@@ -8,36 +8,42 @@ import (
 )
 
 type Client struct {
-	Addr string
+	Addr     string
 	Username string
 	Password string
-	c *mgo.Session
+	c        *mgo.Session
 }
 
 type ClientConfig struct {
-	Addr string
+	Addr     string
 	Username string
 	Password string
 }
 
-func NewClient(conf *ClientConfig) *Client {
+func NewClient(conf *ClientConfig) (*Client, error) {
+	var err error
+
 	c := new(Client)
 	c.Addr = conf.Addr
 	c.Username = conf.Username
 	c.Password = conf.Password
 	if len(c.Username) > 0 && len(c.Password) > 0 {
-		c.c, _ = mgo.Dial(fmt.Sprintf("mongodb://%s:%s@%s", c.Username, c.Password, c.Addr))
+		c.c, err = mgo.Dial(fmt.Sprintf("mongodb://%s:%s@%s", c.Username, c.Password, c.Addr))
 	} else {
-		c.c, _ = mgo.Dial(fmt.Sprintf("mongodb://%s", c.Addr))
+		c.c, err = mgo.Dial(fmt.Sprintf("mongodb://%s", c.Addr))
 	}
 
-	return c
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 type ResponseItem struct {
 	ID         string                 `json:"_id"`
-	Database   string                 `json:"_index"`
-	Collection string                 `json:"_type"`
+	Database   string                 `json:"_database"`
+	Collection string                 `json:"_collection"`
 	Found      bool                   `json:"found"`
 	Source     map[string]interface{} `json:"_source"`
 }
@@ -64,7 +70,6 @@ type BulkRequest struct {
 	Data       map[string]interface{}
 }
 
-
 type BulkResponse struct {
 	Code   int
 	Took   int  `json:"took"`
@@ -74,14 +79,14 @@ type BulkResponse struct {
 }
 
 type BulkResponseItem struct {
-	Database   string          `json:"_index"`
-	Collection string          `json:"_type"`
-	ID         string          `json:"_id"`
-	Status     int             `json:"status"`
-	Found      bool            `json:"found"`
+	Database   string `json:"_index"`
+	Collection string `json:"_type"`
+	ID         string `json:"_id"`
+	Status     int    `json:"status"`
+	Found      bool   `json:"found"`
 }
 
-func (c *Client) Bulk(items []*BulkRequest) ( error) {
+func (c *Client) Bulk(items []*BulkRequest) error {
 	colDict := map[string]*mgo.Bulk{}
 	var database string
 	var collection string
@@ -90,7 +95,7 @@ func (c *Client) Bulk(items []*BulkRequest) ( error) {
 		collection = item.Collection
 		key := fmt.Sprintf("%s_%s", database, collection)
 		if _, ok := colDict[key]; ok {
-            // do nothing
+			// do nothing
 		} else {
 			coll := c.c.DB(database).C(collection)
 			colDict[key] = coll.Bulk()
@@ -107,12 +112,40 @@ func (c *Client) Bulk(items []*BulkRequest) ( error) {
 		}
 	}
 	for _, v := range colDict {
-        _, err := v.Run()
-        if err != nil {
-            return err
-        }
+		_, err := v.Run()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
+func (c *Client) DeleteDB(database string) error {
+	db := c.c.DB(database)
+	if db == nil {
+		return nil
+	}
+	return db.DropDatabase()
+}
+
+func (c *Client) Get(database, collection, id string) (*Response, error) {
+	resp := new(Response)
+	resp.ID = id
+	resp.Database = database
+	resp.Collection = collection
+
+	var result [](map[string]interface{})
+	err := c.c.DB(database).C(collection).Find(bson.M{"_id": id}).All(&result)
+	if err != nil {
+		return nil, err
+	}
+	if len(result) == 0 {
+		resp.Found = false
+		return resp, nil
+	}
+
+	resp.Found = true
+	resp.Source = result[0]
+	return resp, err
+}

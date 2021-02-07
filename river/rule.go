@@ -8,11 +8,11 @@ import (
 // The mapping rule may thi: schema + table <-> database + collection.
 // schema and table is for MySQL, database and collection type is for MongoDB.
 type Rule struct {
-	Schema string `toml:"schema"`
-	Table  string `toml:"table"`
-	Database  string `toml:"database"`
-	Collection   string `toml:"collection"`
-	ID []string `toml:"id"`
+	Schema     string   `toml:"schema"`
+	Table      string   `toml:"table"`
+	Database   string   `toml:"database"`
+	Collection string   `toml:"collection"`
+	ID         []string `toml:"id"`
 
 	// Default, a MySQL table field name is mapped to MongoDB field name.
 	// Sometimes, you want to use different name, e.g, the MySQL file name is title,

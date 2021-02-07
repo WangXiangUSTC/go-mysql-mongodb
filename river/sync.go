@@ -2,16 +2,16 @@ package river
 
 import (
 	"bytes"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
 	"time"
-	"encoding/json"
-	"encoding/hex"
 
+	"github.com/WangXiangUSTC/go-mysql-mongodb/mongodb"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/WangXiangUSTC/go-mysql-mongodb/mongodb"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
@@ -59,19 +59,19 @@ func (h *eventHandler) OnXID(nextPos mysql.Position) error {
 }
 
 func (h *eventHandler) OnRow(e *canal.RowsEvent) error {
-    var err error
+	var err error
 	rule, ok := h.r.rules[ruleKey(e.Table.Schema, e.Table.Name)]
 	if !ok {
-        	if h.r.c.AllDB == "yes" {
-            		rule = newDefaultRule(e.Table.Schema, e.Table.Name)
-            		rule.TableInfo, err = h.r.canal.GetTable(e.Table.Schema, e.Table.Name)
-            		if err != nil {
-            		    	return nil
-            		}
-            		h.r.rules[ruleKey(e.Table.Schema, e.Table.Name)] = rule
-        	} else {
-            		return nil
-        	}
+		if h.r.c.AllDB == "yes" {
+			rule = newDefaultRule(e.Table.Schema, e.Table.Name)
+			rule.TableInfo, err = h.r.canal.GetTable(e.Table.Schema, e.Table.Name)
+			if err != nil {
+				return nil
+			}
+			h.r.rules[ruleKey(e.Table.Schema, e.Table.Name)] = rule
+		} else {
+			return nil
+		}
 	}
 
 	var reqs []*mongodb.BulkRequest
@@ -88,7 +88,7 @@ func (h *eventHandler) OnRow(e *canal.RowsEvent) error {
 
 	if err != nil {
 		h.r.cancel()
-        log.Warnf("make %s MongoDB request err %v, close sync", e.Action, err)
+		log.Warnf("make %s MongoDB request err %v, close sync", e.Action, err)
 		return errors.Errorf("make %s MongoDB request err %v, close sync", e.Action, err)
 	}
 
@@ -286,17 +286,17 @@ func (r *River) makeReqColumnData(col *schema.TableColumn, value interface{}) in
 			return string(value[:])
 		}
 	case schema.TYPE_JSON:
-			var f interface{}
-			var err error
-			switch v := value.(type) {
-				case string:
-					err = json.Unmarshal([]byte(v), &f)
-				case []byte:
-					err = json.Unmarshal(v, &f)
-			}
-			if err == nil && f != nil {
-					return f
-			}
+		var f interface{}
+		var err error
+		switch v := value.(type) {
+		case string:
+			err = json.Unmarshal([]byte(v), &f)
+		case []byte:
+			err = json.Unmarshal(v, &f)
+		}
+		if err == nil && f != nil {
+			return f
+		}
 	}
 
 	return value
@@ -396,55 +396,54 @@ func (r *River) makeUpdateReqData(req *mongodb.BulkRequest, rule *Rule,
 func (r *River) getDocID(rule *Rule, row []interface{}) (string, error) {
 	var (
 		flag bool
-        	ids []interface{}
+		ids  []interface{}
 	)
 	if rule.ID == nil {
-        	ids = make([]interface{}, 0, len(rule.TableInfo.PKColumns))
+		ids = make([]interface{}, 0, len(rule.TableInfo.PKColumns))
 
-        if len(rule.TableInfo.PKColumns) == 0 {
-            	flag = true
-        }
-        for _, num := range rule.TableInfo.PKColumns {
-            	ids = append(ids, r.makeReqColumnData(&(rule.TableInfo.Columns[num]), row[num]))
-        }
+		if len(rule.TableInfo.PKColumns) == 0 {
+			flag = true
+		}
+		for _, num := range rule.TableInfo.PKColumns {
+			ids = append(ids, r.makeReqColumnData(&(rule.TableInfo.Columns[num]), row[num]))
+		}
 	} else {
 		ids = make([]interface{}, 0, len(rule.ID))
 		for _, column := range rule.ID {
-            		index := rule.TableInfo.FindColumn(column)
-            		ids = append(ids, r.makeReqColumnData(&(rule.TableInfo.Columns[index]), row[index]))
+			index := rule.TableInfo.FindColumn(column)
+			ids = append(ids, r.makeReqColumnData(&(rule.TableInfo.Columns[index]), row[index]))
 		}
 	}
-    	if flag {
-        	ids = make([]interface{}, 0, len(rule.TableInfo.Columns))
-        	for i, column := range rule.TableInfo.Columns {
-            		ids = append(ids, r.makeReqColumnData(&column, row[i]))
-        	}
-    	}
+	if flag {
+		ids = make([]interface{}, 0, len(rule.TableInfo.Columns))
+		for i, column := range rule.TableInfo.Columns {
+			ids = append(ids, r.makeReqColumnData(&column, row[i]))
+		}
+	}
 
 	var buf bytes.Buffer
 
 	sep := ""
 	for i, value := range ids {
 		if value == nil {
-            		value = "<nil>" 
-            		if !flag {
-                		log.Warnf("Position: %d id or PK value is nil, row: %s", i, row)
-            		}
+			value = "<nil>"
+			if !flag {
+				log.Warnf("Position: %d id or PK value is nil, row: %s", i, row)
+			}
 		}
 
 		buf.WriteString(fmt.Sprintf("%s%v", sep, value))
 		sep = ":"
 	}
 
-    	if flag {
+	if flag {
 		r.md5Ctx.Write(buf.Bytes())
 		cipherStr := r.md5Ctx.Sum(nil)
-        	r.md5Ctx.Reset()
-        	return hex.EncodeToString(cipherStr), nil
+		r.md5Ctx.Reset()
+		return hex.EncodeToString(cipherStr), nil
 	}
 	return buf.String(), nil
 }
-
 
 func (r *River) doBulk(reqs []*mongodb.BulkRequest) error {
 	if len(reqs) == 0 {
