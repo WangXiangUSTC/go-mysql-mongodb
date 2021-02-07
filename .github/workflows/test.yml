@@ -38,4 +38,6 @@ jobs:
         make integration-test
     
     - name: Unit Test
-      run: GOMODULE=1 go test --race ./...
+      run:  |
+        mysql --user 'root' --host '127.0.0.1' -e 'create database test;'
+        GOMODULE=1 go test --race ./...
