@@ -12,7 +12,7 @@ import (
 	"github.com/ngaut/log"
 )
 
-var configFile = flag.String("config", "./etc/river.toml", "go-mysql-elasticsearch config file")
+var configFile = flag.String("config", "./etc/river.toml", "go-mysql-mongodb config file")
 var my_addr = flag.String("my_addr", "", "MySQL addr")
 var my_user = flag.String("my_user", "", "MySQL user")
 var my_pass = flag.String("my_pass", "", "MySQL password")
