@@ -53,7 +53,6 @@ type Response struct {
 	ResponseItem
 }
 
-// See http://www.elasticsearch.org/guide/en/elasticsearch/guide/current/bulk.html
 const (
 	ActionCreate = "create"
 	ActionUpdate = "update"

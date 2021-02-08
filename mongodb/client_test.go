@@ -15,13 +15,13 @@ func Test(t *testing.T) {
 	TestingT(t)
 }
 
-type elasticTestSuite struct {
+type mongoTestSuite struct {
 	c *Client
 }
 
-var _ = Suite(&elasticTestSuite{})
+var _ = Suite(&mongoTestSuite{})
 
-func (s *elasticTestSuite) SetUpSuite(c *C) {
+func (s *mongoTestSuite) SetUpSuite(c *C) {
 	cfg := new(ClientConfig)
 	cfg.Addr = fmt.Sprintf("%s:%d", *host, *port)
 	cfg.Username = ""
@@ -31,7 +31,7 @@ func (s *elasticTestSuite) SetUpSuite(c *C) {
 	c.Assert(err, IsNil)
 }
 
-func (s *elasticTestSuite) TearDownSuite(c *C) {
+func (s *mongoTestSuite) TearDownSuite(c *C) {
 
 }
 
@@ -43,7 +43,7 @@ func makeTestData(arg1 string, arg2 string) map[string]interface{} {
 	return m
 }
 
-func (s *elasticTestSuite) TestSimple(c *C) {
+func (s *mongoTestSuite) TestSimple(c *C) {
 	database := "dummy"
 	collection := "blog"
 
