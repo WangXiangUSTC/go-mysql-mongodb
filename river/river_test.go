@@ -40,8 +40,7 @@ func (s *riverTestSuite) SetUpSuite(c *C) {
             content VARCHAR(256),	
             mylist VARCHAR(256),	
             tenum ENUM("e1", "e2", "e3"),	
-            tset SET("a", "b", "c"),	
-            tbit BIT(1) default 1,	
+            tset SET("a", "b", "c"),
             PRIMARY KEY(id)) ENGINE=INNODB;	
     `
 
@@ -173,7 +172,7 @@ func (s *riverTestSuite) testPrepareData(c *C) {
 	s.testExecute(c, "INSERT INTO test_river (id, title, content, tenum, tset) VALUES (?, ?, ?, ?, ?)", 1, "first", "hello go 1", "e1", "a,b")
 	s.testExecute(c, "INSERT INTO test_river (id, title, content, tenum, tset) VALUES (?, ?, ?, ?, ?)", 2, "second", "hello mysql 2", "e2", "b,c")
 	s.testExecute(c, "INSERT INTO test_river (id, title, content, tenum, tset) VALUES (?, ?, ?, ?, ?)", 3, "third", "hello elaticsearch 3", "e3", "c")
-	s.testExecute(c, "INSERT INTO test_river (id, title, content, tenum, tset, tbit) VALUES (?, ?, ?, ?, ?, ?)", 4, "fouth", "hello go-mysql-elasticserach 4", "e1", "a,b,c", 0)
+	s.testExecute(c, "INSERT INTO test_river (id, title, content, tenum, tset) VALUES (?, ?, ?, ?, ?)", 4, "fouth", "hello go-mysql-elasticserach 4", "e1", "a,b,c")
 	s.testExecute(c, "INSERT INTO test_for_id (id, title, content, tenum, tset) VALUES (?, ?, ?, ?, ?)", 1, "first", "hello go 1", "e1", "a,b")
 
 	for i := 0; i < 10; i++ {
@@ -272,13 +271,11 @@ func (s *riverTestSuite) TestRiver(c *C) {
 	c.Assert(r.Source["tenum"], Equals, "e3")
 	c.Assert(r.Source["tset"], Equals, "a,b,c")
 	c.Assert(r.Source["mongo_mylist"], DeepEquals, []interface{}{"a", "b", "c"})
-	c.Assert(r.Source["tbit"], Equals, int64(1))
 
 	r = s.testMongoGet(c, "4")
 	c.Assert(r.Found, Equals, true)
 	c.Assert(r.Source["tenum"], Equals, "")
 	c.Assert(r.Source["tset"], Equals, "a,b,c")
-	c.Assert(r.Source["tbit"], Equals, int64(0))
 
 	r = s.testMongoGet(c, "3")
 	c.Assert(r.Found, Equals, false)
