@@ -78,8 +78,8 @@ type BulkResponse struct {
 }
 
 type BulkResponseItem struct {
-	Database   string `json:"_index"`
-	Collection string `json:"_type"`
+	Database   string `json:"_database"`
+	Collection string `json:"_collection"`
 	ID         string `json:"_id"`
 	Status     int    `json:"status"`
 	Found      bool   `json:"found"`

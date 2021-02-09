@@ -49,7 +49,7 @@ tables = ["t3", t4]
 ## Rule
 
 By default, go-mysql-mongodb will use MySQL table name as the MongoDB's database and collection name, use MySQL table field name as the MongoDB's field name.
-e.g, if a table is named blog, the default index and type in MongoDB are both named blog, if the table field is named title,
+e.g, if a table is named blog, the default database and collection in MongoDB are both named blog, if the table field is named title,
 the default field name is also named title.
 
 Rule can let you change this name mapping. Rule format in config file is below:
@@ -66,7 +66,7 @@ collection = "t"
     mongodb = "my_title"
 ```
 
-In the example above, we will use a new index and type both named "t" instead of the default "t1", and use "my_title" instead of the field name "title".
+In the example above, we will use a new database and collection both named "t" instead of the default "t1", and use "my_title" instead of the field name "title".
 
 ## Rule field types
 
@@ -112,7 +112,7 @@ collection = "river"
 
 "test_river_[0-9]{4}" is a wildcard table definition, which represents "test_river_0000" to "test_river_9999", at the same time, the table in the rule must be the same as it.
 
-In the above example, if you have 1024 sub tables, all tables will be synced into MongoDB with index "river" and type "river".
+In the above example, if you have 1024 sub tables, all tables will be synced into MongoDB with database "river" and collection "river".
 
 
 ## Filter fields
