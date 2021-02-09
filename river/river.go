@@ -230,7 +230,7 @@ func (r *River) prepareRule() error {
 				}
 
 				if len(rule.Database) == 0 {
-					return errors.Errorf("wildcard table rule %s.%s must have a index, can not empty", rule.Schema, rule.Table)
+					return errors.Errorf("wildcard table rule %s.%s must have a database, can not empty", rule.Schema, rule.Table)
 				}
 
 				rule.prepare()

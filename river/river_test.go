@@ -125,31 +125,29 @@ mongo_addr = "127.0.0.1:27017"
 data_dir = "./var"	
 [[source]]	
 schema = "test"	
-tables = ["test_river", "test_river_[0-9]{4}", "test_for_id"]	
-[[rule]]	
-schema = "test"	
-table = "test_river"	
-index = "river"	
-type = "river"	
-parent = "pid"	
-    [rule.field]	
-    title = "mongo_title"	
-    mylist = "mongo_mylist,list"	
+tables = ["test_river", "test_river_[0-9]{4}", "test_for_id"]
+[[rule]]
+schema = "test"
+table = "test_river"
+database = "river"	
+collection = "river"
+    [rule.field]
+    title = "mongo_title"
+    mylist = "mongo_mylist,list"
 [[rule]]	
 schema = "test"	
 table = "test_for_id"	
-index = "river"	
-type = "river"	
-parent = "pid"	
+database = "river"	
+collection = "river"	
 id = ["id", "title"]	
-    [rule.field]	
-    title = "mongo_title"	
-    mylist = "mongo_mylist,list"	
-[[rule]]	
-schema = "test"	
-table = "test_river_[0-9]{4}"	
-index = "river"	
-type = "river"	
+    [rule.field]
+    title = "mongo_title"
+    mylist = "mongo_mylist,list"
+[[rule]]
+schema = "test"
+table = "test_river_[0-9]{4}"
+database = "river"
+collection = "river"
     [rule.field]	
     title = "mongo_title"	
     mylist = "mongo_mylist,list"	
